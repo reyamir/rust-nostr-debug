@@ -1,0 +1,9 @@
+[package]
+name = "rust-nostr-debug"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.41.0", features = ["full"] }
+nostr-sdk = { git = "https://github.com/rust-nostr/nostr", features = ["lmdb"] }
+tracing-subscriber = "0.3.18"
