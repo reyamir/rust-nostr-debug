@@ -21,9 +21,23 @@ async fn main() -> Result<()> {
         PublicKey::from_bech32("npub1zfss807aer0j26mwp2la0ume0jqde3823rmu97ra6sgyyg956e0s6xw445")?;
 
     // Fetch user's metadata
-    let events = client.fetch_metadata(public_key, None).await;
+    let _metadata = client.fetch_metadata(public_key, None).await?;
 
-    println!("Events: {:?}", events);
+    let filter = Filter::new()
+        .kind(Kind::Metadata)
+        .author(public_key)
+        .limit(1);
+    let events = client.database().query(vec![filter]).await?;
+    let event = events.first().unwrap();
+    let seens = client
+        .database()
+        .event_seen_on_relays(&event.id)
+        .await?
+        .unwrap();
+
+    for url in seens {
+        println!("Seen on: {}", url)
+    }
 
     Ok(())
 }
