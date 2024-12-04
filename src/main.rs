@@ -1,5 +1,6 @@
 use nostr_sdk::prelude::*;
-use std::sync::OnceLock;
+use std::{sync::OnceLock, time::Duration};
+use tokio::time::sleep;
 
 static CLIENT: OnceLock<Client> = OnceLock::new();
 
@@ -47,25 +48,26 @@ async fn main() -> Result<()> {
 
     // This won't work, nothing are prints
     _ = tokio::spawn(async move {
-        client
+        println!("test 1");
+        let _ = client
             .handle_notifications(|notification| async {
                 if let RelayPoolNotification::Message { message, .. } = notification {
                     println!("Message: {}", message.as_json())
                 }
                 Ok(false)
             })
-            .await
-            .unwrap();
-    })
-    .await;
+            .await;
+    });
 
     // This won't work too
     _ = tokio::spawn(async move {
+        println!("test 2");
         if let Ok(output) = client.subscribe(vec![filter], None).await {
             println!("Output: {:?}", output);
         }
-    })
-    .await;
+    });
+
+    sleep(Duration::from_secs(20)).await;
 
     Ok(())
 }
