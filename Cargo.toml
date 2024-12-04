@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.41.0", features = ["full"] }
-nostr-sdk = { git = "https://github.com/rust-nostr/nostr", features = ["lmdb"] }
+nostr-sdk = { git = "https://github.com/rust-nostr/nostr", features = ["lmdb", "all-nips"] }
 tracing-subscriber = "0.3.18"
