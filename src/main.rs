@@ -4,7 +4,7 @@ use std::sync::OnceLock;
 static CLIENT: OnceLock<Client> = OnceLock::new();
 
 pub fn initialize_client() {
-    let opts = Options::new().gossip(true);
+    let opts = Options::new().gossip(true).automatic_authentication(false);
     let database = NostrLMDB::open("./db/nostr-lmdb").unwrap();
     let client: Client = ClientBuilder::default()
         .database(database)
@@ -29,8 +29,6 @@ async fn main() -> Result<()> {
     let client = get_client();
 
     client.add_relay("wss://relay.damus.io").await?;
-    client.add_discovery_relay("wss://purplepag.es").await?;
-
     client.connect().await;
 
     // Test user
@@ -42,11 +40,13 @@ async fn main() -> Result<()> {
         .author(public_key)
         .limit(1);
 
+    let _ = client.fetch_metadata(public_key, None).await;
+
     _ = tokio::spawn(async move {
         client
             .handle_notifications(|notification| async {
-                if let RelayPoolNotification::Event { event, .. } = notification {
-                    println!("Event: {}", event.as_json())
+                if let RelayPoolNotification::Message { message, .. } = notification {
+                    println!("Message: {}", message.as_json())
                 }
                 Ok(false)
             })
