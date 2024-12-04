@@ -4,7 +4,7 @@ use std::sync::OnceLock;
 static CLIENT: OnceLock<Client> = OnceLock::new();
 
 pub fn initialize_client() {
-    let opts = Options::new().gossip(true).automatic_authentication(false);
+    let opts = Options::new().gossip(false).automatic_authentication(false);
     let database = NostrLMDB::open("./db/nostr-lmdb").unwrap();
     let client: Client = ClientBuilder::default()
         .database(database)
@@ -40,8 +40,12 @@ async fn main() -> Result<()> {
         .author(public_key)
         .limit(1);
 
-    let _ = client.fetch_metadata(public_key, None).await;
+    // This is ok
+    if let Ok(metadata) = client.fetch_metadata(public_key, None).await {
+        println!("Metadata: {:?}", metadata)
+    }
 
+    // This won't work, nothing are prints
     _ = tokio::spawn(async move {
         client
             .handle_notifications(|notification| async {
@@ -55,6 +59,7 @@ async fn main() -> Result<()> {
     })
     .await;
 
+    // This won't work too
     _ = tokio::spawn(async move {
         if let Ok(output) = client.subscribe(vec![filter], None).await {
             println!("Output: {:?}", output);
